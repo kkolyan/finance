@@ -1,14 +1,11 @@
-<%@ page import="com.nplekhanov.finance.Finances" %>
 <%@ page import="org.springframework.web.context.support.WebApplicationContextUtils" %>
 <%@ page import="org.springframework.web.context.WebApplicationContext" %>
 <%@ page import="java.util.Collection" %>
-<%@ page import="com.nplekhanov.finance.Transfer" %>
-<%@ page import="com.nplekhanov.finance.Item" %>
 <%@ page import="java.time.LocalDate" %>
 <%@ page import="java.time.format.DateTimeFormatter" %>
 <%@ page import="java.time.YearMonth" %>
-<%@ page import="com.nplekhanov.finance.Escaping" %>
 <%@ page import="static com.nplekhanov.finance.Escaping.safeHtml" %>
+<%@ page import="com.nplekhanov.finance.*" %>
 <%@ taglib prefix="fin" tagdir="/WEB-INF/tags" %>
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%!
@@ -44,7 +41,7 @@
         if (action.equals("CreateInstantTransfer")) {
             String name = request.getParameter("name");
             long amount = Long.parseLong(request.getParameter("amount"));
-            LocalDate at = LocalDate.parse(request.getParameter("at"), DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+            LocalDate at = LocalDate.parse(request.getParameter("at"), Formats.DATE_TIME);
             Long parent;
             if (request.getParameter("parent") != null) {
                 parent = Long.parseLong(request.getParameter("parent"));

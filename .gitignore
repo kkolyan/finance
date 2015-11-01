@@ -1,0 +1,9 @@
+
+*.iml
+.idea/
+
+*.ipr
+*.iws
+
+/dump
+/yandexmoney

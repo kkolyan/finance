@@ -68,6 +68,7 @@ public class Finances {
             public void processRow(ResultSet rs) throws SQLException {
 
                 InstantTransfer t = new InstantTransfer();
+                t.setTransferId(rs.getLong("id"));
                 t.setItemId(rs.getLong("item_id"));
                 t.setAmount(rs.getLong("amount"));
 
@@ -81,6 +82,7 @@ public class Finances {
             public void processRow(ResultSet rs) throws SQLException {
 
                 MonthlyTransfer t = new MonthlyTransfer();
+                t.setTransferId(rs.getLong("id"));
                 t.setItemId(rs.getLong("item_id"));
                 t.setAmount(rs.getLong("amount"));
 
@@ -216,5 +218,34 @@ public class Finances {
             return null;
         }
         return n;
+    }
+
+    public NamedTransfer getTransfer(long transferId) {
+        String q = "" +
+                "select t.*, i.name " +
+                "from instant_transfer t " +
+                "join item i on i.id = t.item_id " +
+                "where t.id = ?";
+
+        return template.queryForObject(q, new RowMapper<NamedTransfer>() {
+            @Override
+            public NamedTransfer mapRow(ResultSet rs, int rowNum) throws SQLException {
+                NamedTransfer item = new NamedTransfer();
+                item.setName(rs.getString("name"));
+                InstantTransfer t = new InstantTransfer();
+                t.setTransferId(rs.getLong("id"));
+                t.setItemId(rs.getLong("item_id"));
+                t.setDate(rs.getDate("at").toLocalDate());
+                t.setAmount(rs.getLong("amount"));
+                item.setTransfer(t);
+                return item;
+            }
+        }, transferId);
+    }
+
+    public void modifyTransfer(long transferId, LocalDate at, long amount) {
+        template.update(
+                "update instant_transfer set at = ?, amount = ? where id = ?",
+                Date.valueOf(at), amount, transferId);
     }
 }

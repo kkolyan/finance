@@ -7,8 +7,17 @@ import java.util.Collection;
  * @author nplekhanov
  */
 public abstract class Transfer {
+    private long transferId;
     private long itemId;
     private long amount;
+
+    public long getTransferId() {
+        return transferId;
+    }
+
+    public void setTransferId(long transferId) {
+        this.transferId = transferId;
+    }
 
     public long getItemId() {
         return itemId;

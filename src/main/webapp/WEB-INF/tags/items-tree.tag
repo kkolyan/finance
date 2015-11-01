@@ -17,7 +17,7 @@
     if (!item.getTransfers().isEmpty()) {
         %><ul><%
         for (Transfer transfer: item.getTransfers()) {
-            %> <%=transfer%> <%
+            %>  <a href="transfer.jsp?transferId=<%=transfer.getTransferId()%>"><%=transfer%></a>  <%
         }
         %></ul><%
     }

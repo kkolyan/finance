@@ -7,6 +7,7 @@ create table item (
 ) engine InnoDB;
 
 create table instant_transfer (
+  id bigint primary key auto_increment,
   item_id bigint not null,
   amount bigint not null,
   at date not null,
@@ -14,6 +15,7 @@ create table instant_transfer (
 ) engine InnoDB;
 
 create table monthly_transfer (
+  id bigint primary key auto_increment,
   item_id bigint not null,
   amount bigint not null,
   begin date not null,
