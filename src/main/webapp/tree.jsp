@@ -1,12 +1,7 @@
 <%@ page import="com.nplekhanov.finance.Finances" %>
-<%@ page import="org.springframework.web.context.support.WebApplicationContextUtils" %>
-<%@ page import="org.springframework.web.context.WebApplicationContext" %>
-<%@ page import="java.util.Collection" %>
-<%@ page import="com.nplekhanov.finance.Transfer" %>
 <%@ page import="com.nplekhanov.finance.Item" %>
-<%@ page import="java.time.LocalDate" %>
-<%@ page import="java.time.format.DateTimeFormatter" %>
-<%@ page import="java.time.YearMonth" %>
+<%@ page import="org.springframework.web.context.WebApplicationContext" %>
+<%@ page import="org.springframework.web.context.support.WebApplicationContextUtils" %>
 <%@ taglib prefix="fin" tagdir="/WEB-INF/tags" %>
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%!

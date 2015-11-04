@@ -29,10 +29,22 @@ create table initial_balance (
 insert into initial_balance (amount) values (0);
 
 create table actual_balance (
-  at date not null,
+  at date primary key,
   amount bigint not null
 );
 
 insert into actual_balance (at, amount) values ('2015-10-01', 110000);
-
 commit;
+
+
+create table item1 (
+  id bigint primary key auto_increment,
+  name varchar (255) not null,
+  parent_id bigint null,
+  foreign key item1_parent_id (parent_id) references item1 (id),
+  amount bigint null,
+  at date null,
+  period_begin date null,
+  period_end date null,
+  type enum ('GROUP', 'INSTANT_PLANNED', 'INSTANT_ACTUAL', 'MONTHLY_PLANNED') not null
+);

@@ -1,19 +1,15 @@
 package com.nplekhanov.finance;
 
-import java.time.Month;
-import java.time.Year;
 import java.time.YearMonth;
 import java.util.*;
 
 /**
  * @author nplekhanov
  */
-public class Item {
+public abstract class Item {
     private long itemId;
     private Long parentItemId;
     private String name;
-    private Collection<Item> children = new ArrayList<>();
-    private Collection<Transfer> transfers = new ArrayList<>();
     private Item parent;
 
     public List<Item> getPath() {
@@ -32,50 +28,9 @@ public class Item {
         return parent.getPathAsString(delimiter) + delimiter + name;
     }
 
-    public List<Item> explore(Collection<String> names) {
-        List<Item> paths = new ArrayList<>();
+    public abstract Collection<YearMonth> calculateRange();
 
-        paths.add(this);
-
-        if (names.contains(name)) {
-            for (Item child: children) {
-                paths.addAll(child.explore(names));
-            }
-        }
-        return paths;
-    }
-
-    public Collection<YearMonth> calculateRange() {
-        Collection<YearMonth> range = new TreeSet<>();
-        for (Item child: children) {
-            range.addAll(child.calculateRange());
-        }
-        for (Transfer transfer: transfers) {
-            range.addAll(transfer.getRange());
-        }
-        return range;
-    }
-
-    public long calculateAmount(YearMonth month) {
-        long amount = 0;
-        for (Item item: children) {
-            amount += item.calculateAmount(month);
-        }
-        for (Transfer transfer: transfers) {
-            if (transfer.getRange().contains(month)) {
-                amount+= transfer.getAmount();
-            }
-        }
-        return amount;
-    }
-
-    public long calculateAmount(Year year) {
-        long amount = 0;
-        for (Month month: Month.values()) {
-            amount +=calculateAmount(year.atMonth(month));
-        }
-        return amount;
-    }
+    public abstract long calculateAmount(YearMonth month);
 
     public long getItemId() {
         return itemId;
@@ -101,22 +56,6 @@ public class Item {
         this.name = name;
     }
 
-    public Collection<Transfer> getTransfers() {
-        return transfers;
-    }
-
-    public void setTransfers(Collection<Transfer> transfers) {
-        this.transfers = transfers;
-    }
-
-    public Collection<Item> getChildren() {
-        return children;
-    }
-
-    public void setChildren(Collection<Item> children) {
-        this.children = children;
-    }
-
     public Item getParent() {
         return parent;
     }
@@ -127,12 +66,16 @@ public class Item {
 
     @Override
     public String toString() {
-        return "Item{" +
+        return "{" +
                 "itemId=" + itemId +
                 ", parentItemId=" + parentItemId +
                 ", name='" + name + '\'' +
-                ", children=" + children +
-                ", transfers=" + transfers +
+//                ", parent=" + parent +
                 '}';
     }
+
+    public void addChild(Item child) {
+        throw new IllegalStateException("can't add child "+child+" to item " + this);
+    }
+
 }

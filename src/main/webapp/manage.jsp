@@ -1,15 +1,18 @@
-<%@ page import="org.springframework.web.context.support.WebApplicationContextUtils" %>
+<%@ page import="com.nplekhanov.finance.Finances" %>
+<%@ page import="com.nplekhanov.finance.Formats" %>
+<%@ page import="com.nplekhanov.finance.Group" %>
+<%@ page import="com.nplekhanov.finance.Item" %>
 <%@ page import="org.springframework.web.context.WebApplicationContext" %>
-<%@ page import="java.util.Collection" %>
-<%@ page import="java.time.LocalDate" %>
-<%@ page import="java.time.format.DateTimeFormatter" %>
-<%@ page import="java.time.YearMonth" %>
+<%@ page import="org.springframework.web.context.support.WebApplicationContextUtils" %>
 <%@ page import="static com.nplekhanov.finance.Escaping.safeHtml" %>
-<%@ page import="com.nplekhanov.finance.*" %>
+<%@ page import="java.time.LocalDate" %>
+<%@ page import="java.time.YearMonth" %>
+<%@ page import="java.time.format.DateTimeFormatter" %>
+<%@ page import="java.util.Collection" %>
 <%@ taglib prefix="fin" tagdir="/WEB-INF/tags" %>
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%!
-    String getTreeFriendlyPath(Item item) {
+    String getTreeFriendlyPath(Group item) {
 
         int parentPathLength = item.getPath().size();
 
@@ -23,8 +26,6 @@
 <%
     WebApplicationContext context = WebApplicationContextUtils.getRequiredWebApplicationContext(application);
     Finances finances = context.getBean(Finances.class);
-
-    Collection<Item> shallowItems = finances.loadShallowItems();
 
     String action = request.getParameter("action");
     if (action != null) {
@@ -71,6 +72,7 @@
     }
 
     int selectSize = 16;
+    Collection<Group> groups = finances.loadGroups();
 %>
 <html>
 <head>
@@ -99,40 +101,13 @@
             Parent
             <select name="parent" size="1">
                 <%
-                    for (Item item: shallowItems) {
-                %> <option value="<%=item.getItemId()%>"><%=getTreeFriendlyPath(item)%></option> <%
+                    for (Group group : groups) {
+                %> <option value="<%=group.getItemId()%>"><%=getTreeFriendlyPath(group)%></option> <%
                 }
             %>
             </select>
         </label>
         <input type="submit" value="Create"/>
-    </form>
-</fieldset>
-<fieldset>
-    <legend>Edit Hierarchy</legend>
-    <form method="post">
-        <input type="hidden" name="action" value="SetParent"/>
-        <label>
-            Item
-            <select name="item" size="<%=selectSize%>">
-                <%
-                    for (Item item: shallowItems) {
-                %> <option value="<%=item.getItemId()%>"><%=getTreeFriendlyPath(item)%></option> <%
-                }
-            %>
-            </select>
-        </label>
-        <label>
-            Parent
-            <select name="parent" size="<%=selectSize%>">
-                <%
-                    for (Item item: shallowItems) {
-                %> <option value="<%=item.getItemId()%>"><%=safeHtml(getTreeFriendlyPath(item))%></option> <%
-                }
-            %>
-            </select>
-        </label>
-        <input type="submit" value="Associate"/>
     </form>
 </fieldset>
 <fieldset>
@@ -149,8 +124,8 @@
                 Parent
                 <select name="parent">
                     <%
-                        for (Item item: shallowItems) {
-                    %> <option value="<%=item.getItemId()%>"><%=safeHtml(getTreeFriendlyPath(item))%></option> <%
+                        for (Group group : groups) {
+                    %> <option value="<%=group.getItemId()%>"><%=safeHtml(getTreeFriendlyPath(group))%></option> <%
                     }
                 %>
                 </select>
@@ -174,8 +149,8 @@
                 Item
                 <select name="name">
                     <%
-                        for (Item item: shallowItems) {
-                    %> <option value="<%=safeHtml(item.getName())%>"><%=safeHtml(getTreeFriendlyPath(item))%></option> <%
+                        for (Group group : groups) {
+                    %> <option value="<%=safeHtml(group.getName())%>"><%=safeHtml(getTreeFriendlyPath(group))%></option> <%
                     }
                 %>
                 </select>
@@ -206,8 +181,8 @@
                 Parent
                 <select name="parent">
                     <%
-                        for (Item item: shallowItems) {
-                    %> <option value="<%=item.getItemId()%>"><%=safeHtml(getTreeFriendlyPath(item))%></option> <%
+                        for (Group group : groups) {
+                    %> <option value="<%=group.getItemId()%>"><%=safeHtml(getTreeFriendlyPath(group))%></option> <%
                     }
                 %>
                 </select>
@@ -235,8 +210,8 @@
                 Item
                 <select name="name">
                     <%
-                        for (Item item: shallowItems) {
-                    %> <option value="<%=safeHtml(item.getName())%>"><%=safeHtml(getTreeFriendlyPath(item))%></option> <%
+                        for (Group group : groups) {
+                    %> <option value="<%=safeHtml(group.getName())%>"><%=safeHtml(getTreeFriendlyPath(group))%></option> <%
                     }
                 %>
                 </select>

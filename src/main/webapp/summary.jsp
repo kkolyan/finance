@@ -1,16 +1,15 @@
-<%@ page import="org.springframework.web.context.support.WebApplicationContextUtils" %>
-<%@ page import="org.springframework.web.context.WebApplicationContext" %>
+<%@ page import="com.nplekhanov.finance.Escaping" %>
 <%@ page import="com.nplekhanov.finance.Finances" %>
+<%@ page import="com.nplekhanov.finance.Group" %>
 <%@ page import="com.nplekhanov.finance.Item" %>
-<%@ page import="java.time.YearMonth" %>
-<%@ page import="java.util.*" %>
-<%@ page import="java.text.DecimalFormat" %>
 <%@ page import="org.springframework.util.StringUtils" %>
-<%@ page import="java.net.URLEncoder" %>
-<%@ page import="java.time.format.DateTimeFormatter" %>
-<%@ page import="java.time.Year" %>
+<%@ page import="org.springframework.web.context.WebApplicationContext" %>
+<%@ page import="org.springframework.web.context.support.WebApplicationContextUtils" %>
 <%@ page import="java.time.Month" %>
+<%@ page import="java.time.Year" %>
+<%@ page import="java.time.YearMonth" %>
 <%@ page import="java.time.format.TextStyle" %>
+<%@ page import="java.util.*" %>
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <html>
 <head>
@@ -58,6 +57,10 @@
         * {
             white-space: nowrap;
         }
+
+        a.edit-item {
+            color: #CCC;
+        }
     </style>
 </head>
 <body>
@@ -80,13 +83,15 @@
         years.add(Year.of(month.getYear()));
     }
 
-    Collection<String> names = new TreeSet<String>();
+    Collection<Long> names = new TreeSet<Long>();
     String[] itemParams = request.getParameterValues("explore");
     if (itemParams != null) {
-        Collections.addAll(names, itemParams);
+        for (String param: itemParams) {
+            names.add(Long.parseLong(param));
+        }
     }
 
-    List<Item> items = root.explore(names);
+    List<? extends Item> items = ((Group)root).explore(names);
 
     int maxDepth = 0;
     for (Item item: items) {
@@ -118,20 +123,15 @@
     for (int i = 0; i < items.size(); i ++) {
         Item item = items.get(i);
         %> <tr><%
-        Collection<String> toExplore = new HashSet<String>();
+        Collection<Long> toExplore = new HashSet<Long>();
         toExplore.addAll(names);
 
-        if (names.contains(item.getName())) {
-            toExplore.remove(item.getName());
+        if (names.contains(item.getItemId())) {
+            toExplore.remove(item.getItemId());
         } else {
-            toExplore.add(item.getName());
+            toExplore.add(item.getItemId());
         }
 
-        Collection<String> entries = new ArrayList<String>();
-        for (String name: toExplore) {
-            entries.add("explore="+ URLEncoder.encode(name,"utf8"));
-        }
-        String params = StringUtils.collectionToDelimitedString(entries, "&");
         if (last != null && last == item.getParent()) {
 
             int n = 0;
@@ -141,7 +141,27 @@
 
             %> <td rowspan="<%=n%>"></td> <%
         }
-        %><td colspan="<%=maxDepth-item.getPath().size() + 1%>"> <a href="balance.jsp?<%=params%>"><%=item.getName()%></a></td> <%
+        %><td colspan="<%=maxDepth-item.getPath().size() + 1%>" title="<%=Escaping.safeHtml(item)%>">
+            <%
+
+                if (item instanceof Group) {
+                    Collection<String> entries = new ArrayList<String>();
+                    for (Long itemId: toExplore) {
+                        entries.add("explore="+ itemId);
+                    }
+                    String params = StringUtils.collectionToDelimitedString(entries, "&");
+                    %><a href="summary.jsp?<%=params%>"><%=item.getName()%></a><%
+                } else {
+                    %> <%=item.getName()%> <%
+                }
+
+            %>
+            <a class="edit-item"
+               href="transfer.jsp?transferId=<%=item.getItemId()%>"
+               target="_blank">.</a>
+
+
+        </td> <%
 
         for (Year year: years) {
             long annual = 0;
