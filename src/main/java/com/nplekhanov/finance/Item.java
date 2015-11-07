@@ -30,7 +30,7 @@ public abstract class Item {
 
     public abstract Collection<YearMonth> calculateRange();
 
-    public abstract long calculateAmount(YearMonth month);
+    public abstract long calculateAmount(YearMonth month, AmountType amountType);
 
     public long getItemId() {
         return itemId;

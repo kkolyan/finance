@@ -66,4 +66,5 @@
     <login-config>
         <auth-method>DIGEST</auth-method>
     </login-config>
+
 </web-app>

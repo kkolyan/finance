@@ -11,7 +11,7 @@ import java.util.Collections;
 public class InstantTransfer extends Item {
     private LocalDate at;
     private long amount;
-    private boolean planned;
+    private AmountType amountType;
 
     @Override
     public Collection<YearMonth> calculateRange() {
@@ -19,7 +19,10 @@ public class InstantTransfer extends Item {
     }
 
     @Override
-    public long calculateAmount(YearMonth month) {
+    public long calculateAmount(YearMonth month, AmountType amountType) {
+        if (this.amountType != amountType) {
+            return 0;
+        }
         if (at.getYear() != month.getYear() || at.getMonth() != month.getMonth()) {
             return 0;
         }
@@ -42,12 +45,12 @@ public class InstantTransfer extends Item {
         this.amount = amount;
     }
 
-    public boolean isPlanned() {
-        return planned;
+    public AmountType getAmountType() {
+        return amountType;
     }
 
-    public void setPlanned(boolean planned) {
-        this.planned = planned;
+    public void setAmountType(AmountType amountType) {
+        this.amountType = amountType;
     }
 
     @Override
@@ -55,7 +58,7 @@ public class InstantTransfer extends Item {
         return "InstantTransfer{" +
                 "at=" + at +
                 ", amount=" + amount +
-                ", planned=" + planned +
+                ", amountType=" + amountType +
                 "} " + super.toString();
     }
 }

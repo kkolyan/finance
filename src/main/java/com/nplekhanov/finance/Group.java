@@ -19,10 +19,10 @@ public class Group extends Item {
     }
 
     @Override
-    public long calculateAmount(YearMonth month) {
+    public long calculateAmount(YearMonth month, AmountType amountType) {
         long amount = 0;
         for (Item item: children) {
-            amount += item.calculateAmount(month);
+            amount += item.calculateAmount(month, amountType);
         }
         return amount;
     }

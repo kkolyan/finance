@@ -22,7 +22,10 @@ public class MonthlyPlannedTransfer extends Item {
     }
 
     @Override
-    public long calculateAmount(YearMonth month) {
+    public long calculateAmount(YearMonth month, AmountType amountType) {
+        if (amountType != AmountType.PLANNED) {
+            return 0;
+        }
         if (month.isAfter(end) || month.isBefore(begin)) {
             return 0;
         }

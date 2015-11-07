@@ -1,7 +1,3 @@
-<%@ page import="com.nplekhanov.finance.Escaping" %>
-<%@ page import="com.nplekhanov.finance.Finances" %>
-<%@ page import="com.nplekhanov.finance.Group" %>
-<%@ page import="com.nplekhanov.finance.Item" %>
 <%@ page import="org.springframework.util.StringUtils" %>
 <%@ page import="org.springframework.web.context.WebApplicationContext" %>
 <%@ page import="org.springframework.web.context.support.WebApplicationContextUtils" %>
@@ -10,6 +6,8 @@
 <%@ page import="java.time.YearMonth" %>
 <%@ page import="java.time.format.TextStyle" %>
 <%@ page import="java.util.*" %>
+<%@ page import="com.nplekhanov.finance.*" %>
+<%@ page import="java.time.LocalDate" %>
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <html>
 <head>
@@ -23,8 +21,15 @@
             padding: 1px 5px;
             /*min-width: 240px;*/
         }
+
         td.positive {
-            background-color: #ebffeb;
+            background-color: rgb(235, 255, 235);
+        }
+        td.current-month {
+            background-color: rgb(255, 250, 236);
+        }
+        td.positive.current-month {
+            background-color: rgb(240, 253, 235);
         }
         th {
             white-space: nowrap;
@@ -38,6 +43,11 @@
         .offer-field-subtitle {
             color: #2634a6;
         }
+        .transfer-actual { color: black; }
+        .transfer-planned { color: #a3a3a3; font-weight: 300; }
+        .transfer-estimated { color: #7c96d1 }
+        .transfer-corrected { color: #485dc4; font-weight: 300; }
+        .transfer-mixed { color: #8a0b05; font-weight: 300; }
 
         td.amount {
             text-align: right;
@@ -48,6 +58,10 @@
             text-align: right;
             font-size: 10pt;
             font-weight: normal;
+        }
+
+        th.balance_actual {
+            font-weight: bold;
         }
 
         th.annual {
@@ -71,10 +85,21 @@
         }
         return String.format("%,d", o);
     }
+
+    String getClassByAmountTypes(Collection<AmountType> amountTypes) {
+        if (amountTypes.isEmpty()) {
+            return "";
+        }
+        if (amountTypes.size() == 1) {
+            return "transfer-"+amountTypes.iterator().next().name().toLowerCase();
+        }
+        return "transfer-mixed";
+    }
 %>
 <%
     WebApplicationContext context = WebApplicationContextUtils.getRequiredWebApplicationContext(application);
     Finances finances = context.getBean(Finances.class);
+    BalanceCorrection correction = context.getBean(BalanceCorrection.class);
     Item root = finances.loadRoot();
 
     Collection<YearMonth> range = root.calculateRange();
@@ -108,13 +133,18 @@
         %> <th><%=year%></th> <%
     }
     %></tr><%
-    long balance = finances.loadInitialBalance();
-    %> <tr><th class="balance" colspan="<%=maxDepth + 1%>"><%=formatNumber(balance)%></th><%
+    NavigableMap<YearMonth, Balance> balances = correction.getActualBalances();
+    long balance = balances.firstEntry().getValue().getAmount();
+    %> <tr><th class="balance balance_actual" colspan="<%=maxDepth + 1%>"><%=formatNumber(balance)%></th><%
         for (Year year: years) {
             for (Month month: Month.values()) {
-                long amount = root.calculateAmount(YearMonth.of(year.getValue(), month));
+                long amount = 0;
+                for (AmountType amountType: AmountType.values()) {
+                    amount += root.calculateAmount(YearMonth.of(year.getValue(), month), amountType);
+                }
                 balance += amount;
-                %> <th class="balance"><%= formatNumber(balance)%></th> <%
+                boolean actual = balances.containsKey(YearMonth.of(year.getValue(), month));
+                %> <th class="balance<%if (actual) {%> balance_actual<%}%>"><%= formatNumber(balance)%></th> <%
             }
             %> <th class="balance annual"><%=formatNumber(balance)%></th> <%
         }
@@ -163,14 +193,26 @@
 
         </td> <%
 
+        LocalDate today = LocalDate.now();
         for (Year year: years) {
             long annual = 0;
+            Set<AmountType> annualAmountTypes = EnumSet.noneOf(AmountType.class);
             for (Month month: Month.values()) {
-                long amount = item.calculateAmount(YearMonth.of(year.getValue(), month));
-                %><td class="amount<% if (amount > 0) {%> positive<%}%>"><%=formatNumber(amount)%></td><%
+                boolean currentMonth = today.getYear() == year.getValue() && today.getMonth() == month;
+                Set<AmountType> amountTypes = EnumSet.noneOf(AmountType.class);
+                long amount = 0;
+                for (AmountType amountType: AmountType.values()) {
+                    long n = item.calculateAmount(YearMonth.of(year.getValue(), month), amountType);
+                    if (n != 0) {
+                        amount += n;
+                        amountTypes.add(amountType);
+                        annualAmountTypes.add(amountType);
+                    }
+                }
+                %><td class="amount<% if (amount > 0) {%> positive<%}%> <%=getClassByAmountTypes(amountTypes)%><% if (currentMonth) {%> current-month<%}%>"><%=formatNumber(amount)%></td><%
                 annual += amount;
             }
-            %> <th class="annual"><%=formatNumber(annual)%></th> <%
+            %> <th class="annual <%=getClassByAmountTypes(annualAmountTypes)%>"><%=formatNumber(annual)%></th> <%
         }
         %></tr><%
         last = item;

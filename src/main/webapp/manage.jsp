@@ -141,31 +141,6 @@
             <input type="submit" value="Create"/>
         </form>
     </fieldset>
-    <fieldset>
-        <legend>Append to existing</legend>
-        <form method="post">
-            <input type="hidden" name="action" value="CreateInstantTransfer"/>
-            <label>
-                Item
-                <select name="name">
-                    <%
-                        for (Group group : groups) {
-                    %> <option value="<%=safeHtml(group.getName())%>"><%=safeHtml(getTreeFriendlyPath(group))%></option> <%
-                    }
-                %>
-                </select>
-            </label>
-            <label>
-                Amount
-                <input name="amount"/>
-            </label>
-            <label>
-                At (yyyy-MM-dd)
-                <input name="at" />
-            </label>
-            <input type="submit" value="Append"/>
-        </form>
-    </fieldset>
 </fieldset>
 <fieldset>
     <legend>Monthly transfer</legend>

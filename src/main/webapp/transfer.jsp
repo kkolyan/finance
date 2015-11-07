@@ -26,23 +26,29 @@
     long transferId = Long.parseLong(request.getParameter("transferId"));
     Item transfer = finances.getTransfer(transferId);
 
+    String action = request.getParameter("action");
     if (request.getMethod().equalsIgnoreCase("POST")) {
-        long parent = Long.parseLong(request.getParameter("parent"));
-        String name = request.getParameter("name");
+        if (action.equals("DeleteItem")) {
+            finances.deleteItem(transferId);
+        }
+        if (action.equals("ModifyItem")) {
+            long parent = Long.parseLong(request.getParameter("parent"));
+            String name = request.getParameter("name");
 
-        String atText = request.getParameter("at");
-        String beginText = request.getParameter("begin");
-        if (atText != null) {
-            long amount = Long.parseLong(request.getParameter("amount"));
-            LocalDate at = LocalDate.parse(atText, Formats.DATE_TIME);
-            finances.modifyTransfer(transferId, at, amount, name, parent);
-        } else if (beginText != null) {
-            long amount = Long.parseLong(request.getParameter("amount"));
-            YearMonth begin = YearMonth.parse(beginText, Formats.YEAR_MONTH);
-            YearMonth end = YearMonth.parse(request.getParameter("end"), Formats.YEAR_MONTH);
-            finances.modifyTransfer(transferId, begin, end, amount, name, parent);
-        } else {
-            finances.modifyGroup(transferId, name, parent);
+            String atText = request.getParameter("at");
+            String beginText = request.getParameter("begin");
+            if (atText != null) {
+                long amount = Long.parseLong(request.getParameter("amount"));
+                LocalDate at = LocalDate.parse(atText, Formats.DATE_TIME);
+                finances.modifyTransfer(transferId, at, amount, name, parent);
+            } else if (beginText != null) {
+                long amount = Long.parseLong(request.getParameter("amount"));
+                YearMonth begin = YearMonth.parse(beginText, Formats.YEAR_MONTH);
+                YearMonth end = YearMonth.parse(request.getParameter("end"), Formats.YEAR_MONTH);
+                finances.modifyTransfer(transferId, begin, end, amount, name, parent);
+            } else {
+                finances.modifyGroup(transferId, name, parent);
+            }
         }
         response.sendRedirect(request.getContextPath()+request.getServletPath()+"?"+request.getQueryString());
         return;
@@ -64,6 +70,7 @@
     <legend><%=safeHtml(transfer)%> #<%=transferId%></legend>
     <form method="post">
         <input type="hidden" name="transferId" value="<%=transferId%>">
+        <input type="hidden" name="action" value="ModifyItem">
         <label>
             Name
             <input name="name" size="200" value="<%=Escaping.safeHtml(transfer.getName())%>"/>
@@ -115,6 +122,11 @@
         </label>
         <br/>
         <input type="submit" value="Save"/>
+    </form>
+    <form method="post">
+        <input type="hidden" name="transferId" value="<%=transferId%>">
+        <input type="hidden" name="action" value="DeleteItem">
+        <input type="submit" value="Delete"/>
     </form>
 </fieldset>
 

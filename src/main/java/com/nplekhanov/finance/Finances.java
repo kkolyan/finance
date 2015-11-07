@@ -27,6 +27,9 @@ public class Finances {
     @Autowired
     private TransactionOperations tx;
 
+    @Autowired
+    private BalanceCorrection balanceCorrection;
+
     public Collection<String> loadItemNames() {
         return template.queryForList("select distinct name from item1 order by name", String.class);
     }
@@ -53,7 +56,9 @@ public class Finances {
         if (roots.size() != 1) {
             throw new IllegalStateException("expected 1 root, but found: "+roots);
         }
-        return roots.iterator().next();
+        Item root = roots.iterator().next();
+        balanceCorrection.addCorrections(root);
+        return root;
     }
 
     public void createGroup(String name, long parentId) {
@@ -102,14 +107,12 @@ public class Finances {
     }
 
     public void addInstantTransfer(final String name, final long amount, final LocalDate at, final Long parent) {
-        tx.execute(new TransactionCallback<Object>() {
-            @Override
-            public Object doInTransaction(TransactionStatus status) {
-                ItemType type = at.isBefore(LocalDate.now().withDayOfMonth(1)) ? ItemType.INSTANT_ACTUAL : ItemType.INSTANT_PLANNED;
-                template.update("insert into item1 (name, parent_id, amount, at, type) values (?, ?, ?, ?, ?)", name, parent, amount, Date.valueOf(at), type.name());
-                return null;
-            }
-        });
+        ItemType type = !at.withDayOfMonth(1).isAfter(LocalDate.now().withDayOfMonth(1)) ? ItemType.INSTANT_ACTUAL : ItemType.INSTANT_PLANNED;
+        template.update("insert into item1 (name, parent_id, amount, at, type) values (?, ?, ?, ?, ?)", name, parent, amount, Date.valueOf(at), type.name());
+    }
+
+    public void deleteItem(Long itemId) {
+        template.update("delete from item1 where id = ?", itemId);
     }
 
     public void addMonthlyTransfer(final String name, final long amount, final YearMonth begin,final YearMonth end, final Long parent) {
@@ -190,7 +193,8 @@ public class Finances {
                 case INSTANT_PLANNED:
                 case INSTANT_ACTUAL:
                     item = new InstantTransfer();
-                    ((InstantTransfer)item).setPlanned(type == ItemType.INSTANT_PLANNED);
+                    AmountType amountType = type == ItemType.INSTANT_PLANNED ? AmountType.PLANNED : AmountType.ACTUAL;
+                    ((InstantTransfer)item).setAmountType(amountType);
                     ((InstantTransfer)item).setAt(rs.getDate("at").toLocalDate());
                     ((InstantTransfer)item).setAmount(rs.getLong("amount"));
                     break;
