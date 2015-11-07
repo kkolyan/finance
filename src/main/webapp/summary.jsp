@@ -31,10 +31,17 @@
         td.positive.current-month {
             background-color: rgb(240, 253, 235);
         }
+        th.current-month {
+            background-color: rgb(230, 227, 220);
+        }
         th {
             white-space: nowrap;
             background: #EEE;
             font-size: 11pt;
+        }
+
+        th.month {
+            font-weight: normal;
         }
 
         .offer-field-type {
@@ -78,6 +85,7 @@
     </style>
 </head>
 <body>
+<jsp:include page="top.jsp"/>
 <%!
     String formatNumber(Long o) {
         if (o.equals(0L)) {
@@ -102,14 +110,23 @@
     BalanceCorrection correction = context.getBean(BalanceCorrection.class);
     Item root = finances.loadRoot();
 
+    LocalDate today = LocalDate.now();
+
     Collection<YearMonth> range = root.calculateRange();
-    Collection<Year> years = new TreeSet<Year>();
+    Collection<Year> years = new TreeSet<>();
     for (YearMonth month: range) {
         years.add(Year.of(month.getYear()));
     }
 
-    Collection<Long> names = new TreeSet<Long>();
-    String[] itemParams = request.getParameterValues("explore");
+    Collection<Long> names = new TreeSet<>();
+    boolean exploreFromSession = "true".equals(request.getParameter("exploreFromSession"));
+    String[] itemParams;
+    if (exploreFromSession) {
+        itemParams = (String[]) session.getAttribute("explore");
+    } else {
+        itemParams = request.getParameterValues("explore");
+        session.setAttribute("explore", itemParams);
+    }
     if (itemParams != null) {
         for (String param: itemParams) {
             names.add(Long.parseLong(param));
@@ -128,9 +145,10 @@
     %> <tr><th colspan="<%=maxDepth + 1%>"></th><%
     for (Year year: years) {
         for (Month month: Month.values()) {
-            %> <th><%=month.getDisplayName(TextStyle.FULL_STANDALONE, request.getLocale())%></th> <%
+            boolean currentMonth = today.getYear() == year.getValue() && today.getMonth() == month;
+            %> <th class="month<% if (currentMonth) {%> current-month<%}%>"><%=month.getDisplayName(TextStyle.FULL_STANDALONE, request.getLocale())%></th> <%
         }
-        %> <th><%=year%></th> <%
+        %> <th class="year"><%=year%></th> <%
     }
     %></tr><%
     NavigableMap<YearMonth, Balance> balances = correction.getActualBalances();
@@ -138,13 +156,14 @@
     %> <tr><th class="balance balance_actual" colspan="<%=maxDepth + 1%>"><%=formatNumber(balance)%></th><%
         for (Year year: years) {
             for (Month month: Month.values()) {
+                boolean currentMonth = today.getYear() == year.getValue() && today.getMonth() == month;
                 long amount = 0;
                 for (AmountType amountType: AmountType.values()) {
                     amount += root.calculateAmount(YearMonth.of(year.getValue(), month), amountType);
                 }
                 balance += amount;
                 boolean actual = balances.containsKey(YearMonth.of(year.getValue(), month));
-                %> <th class="balance<%if (actual) {%> balance_actual<%}%>"><%= formatNumber(balance)%></th> <%
+                %> <th class="balance<%if (actual) {%> balance_actual<%}%><% if (currentMonth) {%> current-month<%}%>"><%= formatNumber(balance)%></th> <%
             }
             %> <th class="balance annual"><%=formatNumber(balance)%></th> <%
         }
@@ -193,7 +212,6 @@
 
         </td> <%
 
-        LocalDate today = LocalDate.now();
         for (Year year: years) {
             long annual = 0;
             Set<AmountType> annualAmountTypes = EnumSet.noneOf(AmountType.class);

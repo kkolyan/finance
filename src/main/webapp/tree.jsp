@@ -32,6 +32,7 @@
     </style>
 </head>
 <body>
+<jsp:include page="top.jsp"/>
 <%
     Item root = finances.loadRoot();
     try {

@@ -65,6 +65,7 @@
     </style>
 </head>
 <body>
+<jsp:include page="top.jsp"/>
 
 <fieldset>
     <legend><%=safeHtml(transfer)%> #<%=transferId%></legend>

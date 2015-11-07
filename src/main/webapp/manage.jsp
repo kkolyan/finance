@@ -89,6 +89,8 @@
 </head>
 <body>
 
+<jsp:include page="top.jsp"/>
+
 <fieldset>
     <legend>New Group</legend>
     <form method="post">
