@@ -4,4 +4,5 @@
     <a href="summary.jsp?exploreFromSession=true">Summary</a>
     <a href="manage.jsp">Management</a>
     <a href="tree.jsp">Tree</a>
+    <a href="actual_balance.jsp">Actual Balance</a>
 </div>

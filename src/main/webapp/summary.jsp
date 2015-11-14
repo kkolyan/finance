@@ -12,6 +12,7 @@
 <html>
 <head>
     <title></title>
+    <meta name="viewport" content="width=device-width">
     <style>
         table {
             border-collapse: collapse;

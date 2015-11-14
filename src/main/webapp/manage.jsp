@@ -9,6 +9,7 @@
 <%@ page import="java.time.YearMonth" %>
 <%@ page import="java.time.format.DateTimeFormatter" %>
 <%@ page import="java.util.Collection" %>
+<%@ page import="java.time.ZoneId" %>
 <%@ taglib prefix="fin" tagdir="/WEB-INF/tags" %>
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%!
@@ -63,8 +64,6 @@
         }
         if (action.equals("SetInitialBalance")) {
             long amount = Long.parseLong(request.getParameter("amount"));
-
-            finances.setInitialBalance(amount);
         }
 
         response.sendRedirect(request.getContextPath()+request.getServletPath());
@@ -76,6 +75,7 @@
 %>
 <html>
 <head>
+    <meta name="viewport" content="width=device-width">
     <title></title>
     <style type="text/css">
         ul {
@@ -138,7 +138,7 @@
             </label>
             <label>
                 At (yyyy-MM-dd)
-                <input name="at" />
+                <input name="at" value="<%=Formats.DATE_TIME.format(LocalDate.now(ZoneId.of("Europe/Moscow")))%>"/>
             </label>
             <input type="submit" value="Create"/>
         </form>
@@ -208,17 +208,6 @@
             <input type="submit" value="Append"/>
         </form>
     </fieldset>
-</fieldset>
-<fieldset>
-    <legend>Initial Balance</legend>
-    <form method="post">
-        <input type="hidden" name="action" value="SetInitialBalance"/>
-        <label>
-            Amount
-            <input name="amount" value="<%=finances.loadInitialBalance()%>"/>
-        </label>
-        <input type="submit" value="Set"/>
-    </form>
 </fieldset>
 </body>
 </html>

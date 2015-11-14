@@ -106,7 +106,10 @@ public class Finances {
         return items;
     }
 
-    public void addInstantTransfer(final String name, final long amount, final LocalDate at, final Long parent) {
+    public void addInstantTransfer(String name, final long amount, final LocalDate at, final Long parent) {
+        if (name.isEmpty()) {
+            name = template.queryForObject("select name from item1 where id = ?", String.class, parent);
+        }
         ItemType type = !at.withDayOfMonth(1).isAfter(LocalDate.now().withDayOfMonth(1)) ? ItemType.INSTANT_ACTUAL : ItemType.INSTANT_PLANNED;
         template.update("insert into item1 (name, parent_id, amount, at, type) values (?, ?, ?, ?, ?)", name, parent, amount, Date.valueOf(at), type.name());
     }
@@ -131,21 +134,6 @@ public class Finances {
                 return null;
             }
         });
-    }
-
-    public void setInitialBalance(final long amount) {
-        tx.execute(new TransactionCallback<Object>() {
-            @Override
-            public Object doInTransaction(TransactionStatus status) {
-                template.update("delete from initial_balance");
-                template.update("insert into initial_balance (amount) values (?)", amount);
-                return null;
-            }
-        });
-    }
-
-    public long loadInitialBalance() {
-        return template.queryForObject("select amount from initial_balance", Long.class);
     }
 
     public Item getTransfer(long transferId) {

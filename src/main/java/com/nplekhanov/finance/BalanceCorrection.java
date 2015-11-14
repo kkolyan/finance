@@ -5,8 +5,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowCallbackHandler;
 import org.springframework.stereotype.Service;
 
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 import java.time.LocalDate;
 import java.time.YearMonth;
 import java.util.*;
@@ -84,5 +83,17 @@ public class BalanceCorrection {
             }
         });
         return map;
+    }
+
+    public void deleteActualBalance(YearMonth month) {
+        jdbc.update("delete from actual_balance where year(at) = ? and month(at) = ?", month.getYear(), month.getMonthValue());
+    }
+
+    public void addActualBalance(YearMonth month, long amount) {
+        jdbc.update("insert into actual_balance (at, amount) values (?,?)", java.sql.Date.valueOf(month.atDay(1)), amount);
+    }
+
+    public void updateActualBalance(YearMonth month, long amount) {
+        jdbc.update("update actual_balance set amount = ? where year(at) = ? and month(at) = ?", amount, month.getYear(), month.getMonthValue());
     }
 }

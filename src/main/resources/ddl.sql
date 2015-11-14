@@ -23,10 +23,6 @@ create table monthly_transfer (
   foreign key instant_transfer_item (item_id) references item (id)
 ) engine InnoDB;
 
-create table initial_balance (
-  amount bigint
-) engine InnoDB;
-insert into initial_balance (amount) values (0);
 
 create table actual_balance (
   at date primary key,
