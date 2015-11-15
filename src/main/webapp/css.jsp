@@ -27,4 +27,8 @@
     fieldset {
         margin-top: 5px;
     }
+
+    a.img {
+        text-decoration: none;
+    }
 </style>

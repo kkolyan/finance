@@ -152,6 +152,7 @@
         }
     }
 
+
     List<? extends Item> items = ((Group)root).explore(names);
 
     int maxDepth = 0;
@@ -218,7 +219,7 @@
                         entries.add("explore="+ itemId);
                     }
                     String params = StringUtils.collectionToDelimitedString(entries, "&");
-                    %><a href="summary.jsp?<%=params%>">
+                    %><a class="img" href="summary.jsp?<%=params%>">
                         <%
                             if (toExplore.contains(item.getItemId())) {
                                 %><img src="expand.png"/><%
@@ -229,10 +230,15 @@
 
                     </a><%
                 }
+                if (item.getParentItemId() == null) {
+                    %><%=item.getName()%><%
+                } else {
+                    %><a class="edit-item"
+                         href="transfer.jsp?transferId=<%=item.getItemId()%>"><%=item.getName()%></a><%
+                }
 
             %>
-            <a class="edit-item"
-               href="transfer.jsp?transferId=<%=item.getItemId()%>"><%=item.getName()%></a>
+
 
 
         </td> <%

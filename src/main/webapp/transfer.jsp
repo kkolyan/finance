@@ -28,6 +28,10 @@
     long transferId = Long.parseLong(request.getParameter("transferId"));
     Item transfer = finances.getTransfer(transferId);
 
+    if (transfer.getParentItemId() == null) {
+        throw new IllegalStateException("can't configure root");
+    }
+
     String action = request.getParameter("action");
     if (request.getMethod().equalsIgnoreCase("POST")) {
         if (action.equals("ModifyItem")) {
