@@ -229,6 +229,8 @@
                         %>
 
                     </a><%
+                } else {
+                    %><a href="javascript:;"><img src="blank.png"/></a> <%
                 }
                 if (item.getParentItemId() == null) {
                     %><%=item.getName()%><%
