@@ -30,26 +30,13 @@ public class Finances {
     @Autowired
     private BalanceCorrection balanceCorrection;
 
-    public Collection<String> loadItemNames() {
-        return template.queryForList("select distinct name from item1 order by name", String.class);
-    }
-
     public Item loadRoot() {
-        final Map<Long,Item> itemById = new HashMap<>();
+        final Map<Long,Item> itemById = loadHierarchy();
         Collection<Item> roots = new ArrayList<>();
-        for (Item item: loadShallowItems()) {
-            itemById.put(item.getItemId(), item);
-        }
+
         for (Item item: itemById.values()) {
             Long parentId = item.getParentItemId();
-            if (parentId != null) {
-                Item parent = itemById.get(parentId);
-                if (parent == null) {
-                    throw new IllegalStateException("parent for "+item+" not found");
-                }
-                parent.addChild(item);
-                item.setParent(parent);
-            } else {
+            if (parentId == null) {
                 roots.add(item);
             }
         }
@@ -136,10 +123,27 @@ public class Finances {
         });
     }
 
-    public Item getTransfer(long transferId) {
-        String q = "select * from item1 where id = ?";
+    private Map<Long,Item> loadHierarchy() {
+        final Map<Long,Item> itemById = new HashMap<>();
+        for (Item item: loadShallowItems()) {
+            itemById.put(item.getItemId(), item);
+        }
+        for (Item item: itemById.values()) {
+            Long parentId = item.getParentItemId();
+            if (parentId != null) {
+                Item parent = itemById.get(parentId);
+                if (parent == null) {
+                    throw new IllegalStateException("parent for "+item+" not found");
+                }
+                parent.addChild(item);
+                item.setParent(parent);
+            }
+        }
+        return itemById;
+    }
 
-        return template.queryForObject(q, new ItemRowMapper(), transferId);
+    public Item getTransfer(long transferId) {
+        return loadHierarchy().get(transferId);
     }
 
     private YearMonth of(java.sql.Date sqlDate) {

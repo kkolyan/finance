@@ -101,9 +101,6 @@
             font-weight: normal;
         }
 
-        a.edit-item {
-            color: #CCC;
-        }
     </style>
 </head>
 <body>
@@ -175,7 +172,7 @@
     %></tr><%
     NavigableMap<YearMonth, Balance> balances = correction.getActualBalances();
     long balance = balances.firstEntry().getValue().getAmount();
-    %> <tr><th class="balance balance_actual" colspan="<%=maxDepth + 1%>"><%=formatNumber(balance)%></th><%
+    %> <tr><th class="balance balance_actual" colspan="<%=maxDepth + 1%>"><span><%=formatNumber(balance)%></span><a href="actual_balance.jsp"><img src="configure.png"/></a> </th><%
         for (Year year: years) {
             for (Month month: Month.values()) {
                 boolean currentMonth = today.getYear() == year.getValue() && today.getMonth() == month;
@@ -221,15 +218,21 @@
                         entries.add("explore="+ itemId);
                     }
                     String params = StringUtils.collectionToDelimitedString(entries, "&");
-                    %><a href="summary.jsp?<%=params%>"><%=item.getName()%></a><%
-                } else {
-                    %> <%=item.getName()%> <%
+                    %><a href="summary.jsp?<%=params%>">
+                        <%
+                            if (toExplore.contains(item.getItemId())) {
+                                %><img src="expand.png"/><%
+                            } else {
+                                %><img src="shrink.png"/><%
+                            }
+                        %>
+
+                    </a><%
                 }
 
             %>
             <a class="edit-item"
-               href="transfer.jsp?transferId=<%=item.getItemId()%>"
-               target="_blank">.</a>
+               href="transfer.jsp?transferId=<%=item.getItemId()%>"><%=item.getName()%></a>
 
 
         </td> <%
