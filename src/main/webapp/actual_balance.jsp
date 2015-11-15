@@ -11,6 +11,7 @@
 <html>
 <head>
     <title></title>
+    <jsp:include page="css.jsp" />
 </head>
 <body>
 <jsp:include page="top.jsp"/>

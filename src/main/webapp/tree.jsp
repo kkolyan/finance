@@ -24,6 +24,7 @@
 <html>
 <head>
     <title></title>
+    <jsp:include page="css.jsp"/>
     <style type="text/css">
         ul {
             /*padding: 0;*/

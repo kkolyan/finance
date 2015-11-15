@@ -10,6 +10,7 @@
 <%@ page import="java.time.format.DateTimeFormatter" %>
 <%@ page import="java.util.Collection" %>
 <%@ page import="java.time.ZoneId" %>
+<%@ page import="java.util.TreeSet" %>
 <%@ taglib prefix="fin" tagdir="/WEB-INF/tags" %>
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%!
@@ -73,9 +74,14 @@
     int selectSize = 16;
     Collection<Group> groups = finances.loadGroups();
 %>
+<%
+    Collection<YearMonth> futureMonths = new TreeSet<>();
+    for (int i = 0; i < 24; i ++) {
+        futureMonths.add(YearMonth.now().plusMonths(i + 1));
+    }
+%>
 <html>
 <head>
-    <meta name="viewport" content="width=device-width">
     <title></title>
     <style type="text/css">
         ul {
@@ -85,12 +91,90 @@
         * {
             vertical-align: top;
         }
+        label {
+            display: block;
+        }
     </style>
+    <jsp:include page="css.jsp"/>
 </head>
 <body>
 
 <jsp:include page="top.jsp"/>
 
+<fieldset>
+    <legend>Instant Transfer</legend>
+    <form method="post">
+        <input type="hidden" name="action" value="CreateInstantTransfer"/>
+        <label>
+            Name
+            <input name="name"/>
+        </label>
+        <label>
+            Parent
+            <select name="parent">
+                <%
+                    for (Group group : groups) {
+                %> <option value="<%=group.getItemId()%>"><%=safeHtml(getTreeFriendlyPath(group))%></option> <%
+                }
+            %>
+            </select>
+        </label>
+        <label>
+            Amount
+            <input name="amount"/>
+        </label>
+        <label>
+            At (yyyy-MM-dd)
+            <input name="at" value="<%=Formats.DATE_TIME.format(LocalDate.now(ZoneId.of("Europe/Moscow")))%>"/>
+        </label>
+        <input type="submit" value="Create"/>
+    </form>
+</fieldset>
+<fieldset>
+    <legend>Monthly transfer</legend>
+    <form method="post">
+        <input type="hidden" name="action" value="CreateMonthlyTransfer"/>
+        <label>
+            Name
+            <input name="name"/>
+        </label>
+        <label>
+            Parent
+            <select name="parent">
+                <%
+                    for (Group group : groups) {
+                %> <option value="<%=group.getItemId()%>"><%=safeHtml(getTreeFriendlyPath(group))%></option> <%
+                }
+            %>
+            </select>
+        </label>
+        <label>
+            Amount
+            <input name="amount"/>
+        </label>
+        <label>
+            Begin (yyyy-MM)
+            <select name="begin" >
+                <%
+                    for (YearMonth month: futureMonths) {
+                %><option><%=month.format(Formats.YEAR_MONTH)%></option> <%
+                }
+            %>
+            </select>
+        </label>
+        <label>
+            End (yyyy-MM)
+            <select name="end">
+                <%
+                    for (YearMonth month: futureMonths) {
+                %><option><%=month.format(Formats.YEAR_MONTH)%></option> <%
+                }
+            %>
+            </select>
+        </label>
+        <input type="submit" value="Create"/>
+    </form>
+</fieldset>
 <fieldset>
     <legend>New Group</legend>
     <form method="post">
@@ -111,103 +195,6 @@
         </label>
         <input type="submit" value="Create"/>
     </form>
-</fieldset>
-<fieldset>
-    <legend>Instant Transfer</legend>
-    <fieldset>
-        <legend>New</legend>
-        <form method="post">
-            <input type="hidden" name="action" value="CreateInstantTransfer"/>
-            <label>
-                Name
-                <input name="name"/>
-            </label>
-            <label>
-                Parent
-                <select name="parent">
-                    <%
-                        for (Group group : groups) {
-                    %> <option value="<%=group.getItemId()%>"><%=safeHtml(getTreeFriendlyPath(group))%></option> <%
-                    }
-                %>
-                </select>
-            </label>
-            <label>
-                Amount
-                <input name="amount"/>
-            </label>
-            <label>
-                At (yyyy-MM-dd)
-                <input name="at" value="<%=Formats.DATE_TIME.format(LocalDate.now(ZoneId.of("Europe/Moscow")))%>"/>
-            </label>
-            <input type="submit" value="Create"/>
-        </form>
-    </fieldset>
-</fieldset>
-<fieldset>
-    <legend>Monthly transfer</legend>
-    <fieldset>
-        <legend>New</legend>
-        <form method="post">
-            <input type="hidden" name="action" value="CreateMonthlyTransfer"/>
-            <label>
-                Name
-                <input name="name"/>
-            </label>
-            <label>
-                Parent
-                <select name="parent">
-                    <%
-                        for (Group group : groups) {
-                    %> <option value="<%=group.getItemId()%>"><%=safeHtml(getTreeFriendlyPath(group))%></option> <%
-                    }
-                %>
-                </select>
-            </label>
-            <label>
-                Amount
-                <input name="amount"/>
-            </label>
-            <label>
-                Begin (yyyy-MM)
-                <input name="begin" />
-            </label>
-            <label>
-                End (yyyy-MM)
-                <input name="end" />
-            </label>
-            <input type="submit" value="Create"/>
-        </form>
-    </fieldset>
-    <fieldset>
-        <legend>Append to existing</legend>
-        <form method="post">
-            <input type="hidden" name="action" value="CreateMonthlyTransfer"/>
-            <label>
-                Item
-                <select name="name">
-                    <%
-                        for (Group group : groups) {
-                    %> <option value="<%=safeHtml(group.getName())%>"><%=safeHtml(getTreeFriendlyPath(group))%></option> <%
-                    }
-                %>
-                </select>
-            </label>
-            <label>
-                Amount
-                <input name="amount"/>
-            </label>
-            <label>
-                Begin (yyyy-MM)
-                <input name="begin" />
-            </label>
-            <label>
-                End (yyyy-MM)
-                <input name="end" />
-            </label>
-            <input type="submit" value="Append"/>
-        </form>
-    </fieldset>
 </fieldset>
 </body>
 </html>

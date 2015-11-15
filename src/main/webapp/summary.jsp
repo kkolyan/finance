@@ -12,10 +12,21 @@
 <html>
 <head>
     <title></title>
-    <meta name="viewport" content="width=device-width">
+    <jsp:include page="css.jsp"/>
     <style>
         table {
             border-collapse: collapse;
+        }
+        .even td, .even th {
+            border: 1px solid #CCC;
+            padding: 1px 5px;
+            /*min-width: 240px;*/
+        }
+        .odd td, .odd th {
+            border: 1px solid #CCC;
+            padding: 1px 5px;
+            /*min-width: 240px;*/
+            background-color: #f6f6f6;
         }
         td,th {
             border: 1px solid #CCC;
@@ -23,21 +34,34 @@
             /*min-width: 240px;*/
         }
 
-        td.positive {
+        .even td.positive {
             background-color: rgb(235, 255, 235);
         }
-        td.current-month {
+        .even td.current-month {
             background-color: rgb(255, 250, 236);
         }
-        td.positive.current-month {
+        .even td.positive.current-month {
             background-color: rgb(240, 253, 235);
         }
-        th.current-month {
-            background-color: rgb(230, 227, 220);
+        .even th.current-month {
+            background-color: rgb(223, 220, 213);
         }
+        .odd td.positive {
+            background-color: rgb(225, 245, 225);
+        }
+        .odd td.current-month {
+            background-color: rgb(241, 236, 222);
+        }
+        .odd td.positive.current-month {
+            background-color: rgb(230, 243, 225);
+        }
+        .odd th.current-month {
+            background-color: rgb(223, 220, 213);
+        }
+
         th {
             white-space: nowrap;
-            background: #EEE;
+            background: rgb(238, 238, 238);
             font-size: 11pt;
         }
 
@@ -75,9 +99,6 @@
         th.annual {
             text-align: right;
             font-weight: normal;
-        }
-        * {
-            white-space: nowrap;
         }
 
         a.edit-item {
@@ -123,10 +144,10 @@
     boolean exploreFromSession = "true".equals(request.getParameter("exploreFromSession"));
     String[] itemParams;
     if (exploreFromSession) {
-        itemParams = (String[]) session.getAttribute("explore");
+        itemParams = (String[]) application.getAttribute("explore");
     } else {
         itemParams = request.getParameterValues("explore");
-        session.setAttribute("explore", itemParams);
+        application.setAttribute("explore", itemParams);
     }
     if (itemParams != null) {
         for (String param: itemParams) {
@@ -172,7 +193,7 @@
     Item last = null;
     for (int i = 0; i < items.size(); i ++) {
         Item item = items.get(i);
-        %> <tr><%
+        %> <tr class="<%=i % 2 == 0 ? "odd" : "even"%>"><%
         Collection<Long> toExplore = new HashSet<Long>();
         toExplore.addAll(names);
 
@@ -191,7 +212,7 @@
 
             %> <td rowspan="<%=n%>"></td> <%
         }
-        %><td colspan="<%=maxDepth-item.getPath().size() + 1%>" title="<%=Escaping.safeHtml(item)%>">
+        %><td colspan="<%=maxDepth-item.getPath().size() + 1%>">
             <%
 
                 if (item instanceof Group) {

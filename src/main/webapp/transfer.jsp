@@ -57,8 +57,8 @@
 %>
 <html>
 <head>
-    <meta name="viewport" content="width=device-width">
     <title></title>
+    <jsp:include page="css.jsp"/>
     <style>
         * {
             vertical-align: top;
