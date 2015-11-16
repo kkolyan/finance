@@ -27,9 +27,6 @@
                 if (o2 instanceof MonthlyPlannedTransfer) {
                     return ((MonthlyPlannedTransfer) o1).getBegin().compareTo(((MonthlyPlannedTransfer) o2).getBegin());
                 }
-                if (o2 instanceof InstantTransfer) {
-                    return 1;
-                }
                 if (o2 instanceof Group) {
                     return -1;
                 }
