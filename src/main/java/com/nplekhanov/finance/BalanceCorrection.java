@@ -19,7 +19,7 @@ public class BalanceCorrection {
     @Autowired
     private JdbcTemplate jdbc;
 
-    public void addCorrections(Item root) {
+    public void addCorrections(Item root, Long userId) {
 
         Group rootCorrectionItem = new Group();
         rootCorrectionItem.setName("Auto ХЗ");
@@ -28,7 +28,7 @@ public class BalanceCorrection {
         rootCorrectionItem.setItemId(-1);
 
         Balance last = null;
-        for (Balance balance: getActualBalances().values()) {
+        for (Balance balance: getActualBalances(userId).values()) {
             if (last != null) {
                 long registeredChangeAtPeriod = 0;
                 Collection<YearMonth> range = getInclusiveRange(last.getAt().plusMonths(1), balance.getAt());
@@ -65,9 +65,9 @@ public class BalanceCorrection {
         return range;
     }
 
-    public NavigableMap<YearMonth,Balance> getActualBalances() {
+    public NavigableMap<YearMonth,Balance> getActualBalances(Long userId) {
         final NavigableMap<YearMonth, Balance> map = new TreeMap<>();
-        jdbc.query("select * from actual_balance", new RowCallbackHandler() {
+        jdbc.query("select * from actual_balance where owner_id = ?", new RowCallbackHandler() {
             @Override
             public void processRow(ResultSet rs) throws SQLException {
                 LocalDate at = rs.getDate("at").toLocalDate();
@@ -81,19 +81,19 @@ public class BalanceCorrection {
 
                 map.put(month, balance);
             }
-        });
+        }, userId);
         return map;
     }
 
-    public void deleteActualBalance(YearMonth month) {
-        jdbc.update("delete from actual_balance where year(at) = ? and month(at) = ?", month.getYear(), month.getMonthValue());
+    public void deleteActualBalance(YearMonth month, Long userId) {
+        jdbc.update("delete from actual_balance where year(at) = ? and month(at) = ? and owner_id = ?", month.getYear(), month.getMonthValue(), userId);
     }
 
-    public void addActualBalance(YearMonth month, long amount) {
-        jdbc.update("insert into actual_balance (at, amount) values (?,?)", java.sql.Date.valueOf(month.atDay(1)), amount);
+    public void addActualBalance(YearMonth month, long amount, Long userId) {
+        jdbc.update("insert into actual_balance (at, amount, owner_id) values (?,?, ?)", java.sql.Date.valueOf(month.atDay(1)), amount, userId);
     }
 
-    public void updateActualBalance(YearMonth month, long amount) {
-        jdbc.update("update actual_balance set amount = ? where year(at) = ? and month(at) = ?", amount, month.getYear(), month.getMonthValue());
+    public void updateActualBalance(YearMonth month, long amount, Long userId) {
+        jdbc.update("update actual_balance set amount = ? where year(at) = ? and month(at) = ? and owner_id = ?", amount, month.getYear(), month.getMonthValue(), userId);
     }
 }

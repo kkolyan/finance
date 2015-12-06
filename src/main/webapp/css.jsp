@@ -20,6 +20,15 @@
     * {
         vertical-align: middle;
     }
+    table {
+        border-collapse: collapse;
+    }
+    td, th {
+        border: solid 1px #ccc;
+    }
+    th {
+        background-color: #eee;
+    }
     label {
         display: block;
     }

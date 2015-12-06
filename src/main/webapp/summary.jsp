@@ -14,9 +14,6 @@
     <title></title>
     <jsp:include page="css.jsp"/>
     <style>
-        table {
-            border-collapse: collapse;
-        }
         .even td, .even th {
             border: 1px solid #CCC;
             padding: 1px 5px;
@@ -104,7 +101,7 @@
     </style>
 </head>
 <body>
-<jsp:include page="top.jsp"/>
+<%@ include file="top.jsp"%>
 <%!
     String formatNumber(Long o) {
         if (o.equals(0L)) {
@@ -127,7 +124,7 @@
     WebApplicationContext context = WebApplicationContextUtils.getRequiredWebApplicationContext(application);
     Finances finances = context.getBean(Finances.class);
     BalanceCorrection correction = context.getBean(BalanceCorrection.class);
-    Item root = finances.loadRoot();
+    Item root = finances.loadRoot((Long) session.getAttribute("userId"));
 
     LocalDate today = LocalDate.now();
 
@@ -171,9 +168,14 @@
         %> <th class="year"><%=year%></th> <%
     }
     %></tr><%
-    NavigableMap<YearMonth, Balance> balances = correction.getActualBalances();
-    long balance = balances.firstEntry().getValue().getAmount();
-    %> <tr><th class="balance balance_actual" colspan="<%=maxDepth + 1%>"><span><%=formatNumber(balance)%></span><a href="actual_balance.jsp"><img src="configure.png"/></a> </th><%
+    NavigableMap<YearMonth, Balance> balances = correction.getActualBalances((Long) session.getAttribute("userId"));
+    long balance;
+    if (balances.isEmpty()) {
+        balance = 0;
+    } else {
+        balance = balances.firstEntry().getValue().getAmount();
+    }
+%> <tr><th class="balance balance_actual" colspan="<%=maxDepth + 1%>"><span><%=formatNumber(balance)%></span><a href="actual_balance.jsp"><img src="configure.png"/></a> </th><%
         for (Year year: years) {
             for (Month month: Month.values()) {
                 boolean currentMonth = today.getYear() == year.getValue() && today.getMonth() == month;
@@ -232,7 +234,7 @@
                 } else {
                     %><a href="javascript:;"><img src="blank.png"/></a> <%
                 }
-                if (item.getParentItemId() == null) {
+                if (false && item.getParentItemId() == null) {
                     %><%=item.getName()%><%
                 } else {
                     %><a class="edit-item"

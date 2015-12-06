@@ -30,8 +30,8 @@ public class Finances {
     @Autowired
     private BalanceCorrection balanceCorrection;
 
-    public Item loadRoot() {
-        final Map<Long,Item> itemById = loadHierarchy();
+    public Item loadRoot(Long userId) {
+        final Map<Long,Item> itemById = loadHierarchy(userId);
         Collection<Item> roots = new ArrayList<>();
 
         for (Item item: itemById.values()) {
@@ -44,27 +44,27 @@ public class Finances {
             throw new IllegalStateException("expected 1 root, but found: "+roots);
         }
         Item root = roots.iterator().next();
-        balanceCorrection.addCorrections(root);
+        balanceCorrection.addCorrections(root, userId);
         return root;
     }
 
-    public void createGroup(String name, long parentId) {
-        template.update("insert into item1 (name, parent_id, type) values (?, ?, ?)", name, parentId, ItemType.GROUP.name());
+    public void createGroup(String name, Long parentId, Long userId) {
+        template.update("insert into item1 (name, parent_id, type, owner_id) values (?, ?, ?, ?)", name, parentId, ItemType.GROUP.name(), userId);
     }
 
-    public void associate(final long itemId, final long parentId) {
+    public void associate(final long itemId, final Long parentId, final Long userId) {
         tx.execute(new TransactionCallback<Object>() {
             @Override
             public Object doInTransaction(TransactionStatus status) {
-                template.update("update item1 set parent_id = ? where id = ?", parentId, itemId);
+                template.update("update item1 set parent_id = ? where id = ? and owner_id = ?", parentId, itemId, userId);
                 return null;
             }
         });
     }
 
-    public Collection<Group> loadGroups() {
+    public Collection<Group> loadGroups(Long userId) {
         Collection<Group> groups = new ArrayList<>();
-        for (Item item: loadShallowItems()) {
+        for (Item item: loadShallowItems(userId)) {
             if (item instanceof Group) {
                 groups.add((Group) item);
             }
@@ -72,9 +72,16 @@ public class Finances {
         return groups;
     }
 
-    public Collection<Item> loadShallowItems() {
+    public Collection<Item> loadShallowItems(Long userId) {
         final Map<Long,Item> itemMap = new HashMap<>();
-        List<Item> items = template.query("select * from item1", new ItemRowMapper());
+
+        List<Item> items = template.query("select * from item1 where owner_id = ?", new ItemRowMapper(), userId);
+
+        Group root = new Group();
+        root.setName("Total");
+        root.setItemId(0);
+        items.add(root);
+
         for (Item item: items) {
             itemMap.put(item.getItemId(), item);
         }
@@ -93,39 +100,39 @@ public class Finances {
         return items;
     }
 
-    public void addInstantTransfer(String name, final long amount, final LocalDate at, final Long parent) {
+    public void addInstantTransfer(String name, final long amount, final LocalDate at, final Long parent, Long userId) {
         if (name.isEmpty()) {
-            name = template.queryForObject("select name from item1 where id = ?", String.class, parent);
+            name = template.queryForObject("select name from item1 where id = ? and owner_id = ?", String.class, parent, userId);
         }
         ItemType type = !at.withDayOfMonth(1).isAfter(LocalDate.now().withDayOfMonth(1)) ? ItemType.INSTANT_ACTUAL : ItemType.INSTANT_PLANNED;
-        template.update("insert into item1 (name, parent_id, amount, at, type) values (?, ?, ?, ?, ?)", name, parent, amount, Date.valueOf(at), type.name());
+        template.update("insert into item1 (name, parent_id, amount, at, type, owner_id) values (?, ?, ?, ?, ?, ?)", name, parent, amount, Date.valueOf(at), type.name(), userId);
     }
 
-    public void deleteItem(Long itemId) {
-        template.update("delete from item1 where id = ?", itemId);
+    public void deleteItem(Long itemId, Long userId) {
+        template.update("delete from item1 where id = ? and owner_id", itemId, userId);
     }
 
-    public void addMonthlyTransfer(final String name, final long amount, final YearMonth begin,final YearMonth end, final Long parent) {
+    public void addMonthlyTransfer(final String name, final long amount, final YearMonth begin,final YearMonth end, final Long parent, final Long userId) {
         tx.execute(new TransactionCallback<Object>() {
             @Override
             public Object doInTransaction(TransactionStatus status) {
 
                 LocalDate thisMonth = LocalDate.now().withDayOfMonth(1);
                 for (LocalDate d = LocalDate.of(begin.getYear(), begin.getMonth(), 1); d.isBefore(thisMonth); d = d.plusMonths(1)) {
-                    addInstantTransfer(name, amount, d, parent);
+                    addInstantTransfer(name, amount, d, parent, userId);
                 }
 
-                template.update("insert into item1 (name, parent_id, amount, period_begin, period_end, type) values (?, ?, ?, ?, ?, ?)",
-                        name, parent, amount, Date.valueOf(begin.atDay(1)), Date.valueOf(end.atDay(1)), ItemType.MONTHLY_PLANNED.name());
+                template.update("insert into item1 (name, parent_id, amount, period_begin, period_end, type, owner_id) values (?, ?, ?, ?, ?, ?, ?)",
+                        name, parent, amount, Date.valueOf(begin.atDay(1)), Date.valueOf(end.atDay(1)), ItemType.MONTHLY_PLANNED.name(), userId);
 
                 return null;
             }
         });
     }
 
-    private Map<Long,Item> loadHierarchy() {
+    private Map<Long,Item> loadHierarchy(Long userId) {
         final Map<Long,Item> itemById = new HashMap<>();
-        for (Item item: loadShallowItems()) {
+        for (Item item: loadShallowItems(userId)) {
             itemById.put(item.getItemId(), item);
         }
         for (Item item: itemById.values()) {
@@ -142,8 +149,11 @@ public class Finances {
         return itemById;
     }
 
-    public Item getTransfer(long transferId) {
-        return loadHierarchy().get(transferId);
+    public Item getTransfer(Long transferId, Long userId) {
+        if (Objects.equals(transferId, 0L)) {
+            return loadRoot(userId);
+        }
+        return loadHierarchy(userId).get(transferId);
     }
 
     private YearMonth of(java.sql.Date sqlDate) {
@@ -155,22 +165,22 @@ public class Finances {
         return Date.valueOf(LocalDate.of(month.getYear(), month.getMonth(), 1));
     }
 
-    public void modifyTransfer(long transferId, LocalDate at, long amount, String name, Long parent) {
+    public void modifyTransfer(long transferId, LocalDate at, long amount, String name, Long parent, Long userId) {
         template.update(
-                "update item1 set name = ?, parent_id = ?, at = ?, amount = ? where id = ? and (type = ? or type = ?)",
-                name, parent, Date.valueOf(at), amount, transferId, ItemType.INSTANT_ACTUAL.name(), ItemType.INSTANT_PLANNED.name());
+                "update item1 set name = ?, parent_id = ?, at = ?, amount = ? where id = ? and (type = ? or type = ?) and owner_id = ?",
+                name, parent, Date.valueOf(at), amount, transferId, ItemType.INSTANT_ACTUAL.name(), ItemType.INSTANT_PLANNED.name(), userId);
     }
 
-    public void modifyTransfer(long transferId, YearMonth begin, YearMonth end, long amount, String name, long parent) {
+    public void modifyTransfer(long transferId, YearMonth begin, YearMonth end, long amount, String name, Long parent, Long userId) {
         template.update(
-                "update item1 set name = ?, parent_id = ?, period_begin = ?, period_end = ?, amount = ? where id = ? and type = ?",
-                name, parent, asSql(begin), asSql(end), amount, transferId, ItemType.MONTHLY_PLANNED.name());
+                "update item1 set name = ?, parent_id = ?, period_begin = ?, period_end = ?, amount = ? where id = ? and type = ? and owner_id = ?",
+                name, parent, asSql(begin), asSql(end), amount, transferId, ItemType.MONTHLY_PLANNED.name(), userId);
     }
 
-    public void modifyGroup(long transferId, String name, long parent) {
+    public void modifyGroup(long transferId, String name, Long parent, Long userId) {
         template.update(
-                "update item1 set name = ?, parent_id = ? where id = ? and type = ?",
-                name, parent, transferId, ItemType.GROUP.name());
+                "update item1 set name = ?, parent_id = ? where id = ? and type = ? and owner_id = ?",
+                name, parent, transferId, ItemType.GROUP.name(), userId);
     }
 
     private class ItemRowMapper implements RowMapper<Item> {

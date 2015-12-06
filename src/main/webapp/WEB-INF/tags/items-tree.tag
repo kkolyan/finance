@@ -11,10 +11,12 @@
     Collections.sort(children, new ItemComparator());
     for (com.nplekhanov.finance.Item child: children) {
             %><li><%
-            %><a href="transfer.jsp?transferId=<%=child.getItemId()%>"><%=child.getName()%>
-            <%
-            %>
-            </a><%
+            if (child.getItemId() < 0) {
+                %><%=child.getName()%><%
+            } else {
+                %><a href="transfer.jsp?transferId=<%=child.getItemId()%>"><%=child.getName()%></a><%
+            }
+            %><%
             if (child instanceof InstantTransfer) {
                 %> <%=((InstantTransfer) child).getAt().format(Formats.DATE_TIME)%>, <%=((InstantTransfer) child).getAmount()%><%
             }

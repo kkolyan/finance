@@ -55,8 +55,9 @@
     </security-role>
     <security-constraint>
         <web-resource-collection>
-            <web-resource-name>all</web-resource-name>
-            <url-pattern>/*</url-pattern>
+            <web-resource-name>secured_pages</web-resource-name>
+            <url-pattern>/invitations.jsp</url-pattern>
+            <url-pattern>/backup.jsp</url-pattern>
         </web-resource-collection>
         <auth-constraint>
             <role-name>finance-user</role-name>

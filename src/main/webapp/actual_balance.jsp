@@ -14,7 +14,6 @@
     <jsp:include page="css.jsp" />
 </head>
 <body>
-<jsp:include page="top.jsp"/>
 <a href="summary.jsp?exploreFromSession=true">Summary</a>
 
 <%
@@ -27,23 +26,24 @@
         months.add(YearMonth.now().minusMonths(i));
     }
 
-    NavigableMap<YearMonth, Balance> balances = balanceCorrection.getActualBalances();
+    Long userId = (Long) session.getAttribute("userId");
+    NavigableMap<YearMonth, Balance> balances = balanceCorrection.getActualBalances(userId);
 
     String action = request.getParameter("action");
     if (action != null) {
         if (action.equals("delete")) {
             YearMonth month = YearMonth.parse(request.getParameter("month"), Formats.YEAR_MONTH);
-            balanceCorrection.deleteActualBalance(month);
+            balanceCorrection.deleteActualBalance(month, userId);
         }
         if (action.equals("add")) {
             YearMonth month = YearMonth.parse(request.getParameter("month"), Formats.YEAR_MONTH);
             long amount = Long.parseLong(request.getParameter("amount"));
-            balanceCorrection.addActualBalance(month, amount);
+            balanceCorrection.addActualBalance(month, amount, userId);
         }
         if (action.equals("update")) {
             YearMonth month = YearMonth.parse(request.getParameter("month"), Formats.YEAR_MONTH);
             long amount = Long.parseLong(request.getParameter("amount"));
-            balanceCorrection.updateActualBalance(month, amount);
+            balanceCorrection.updateActualBalance(month, amount, userId);
         }
 
         response.sendRedirect(request.getContextPath()+request.getServletPath());

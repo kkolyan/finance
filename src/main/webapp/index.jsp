@@ -5,7 +5,7 @@
     <jsp:include page="css.jsp" />
 </head>
 <body>
-<jsp:include page="top.jsp"/>
+<%@ include file="top.jsp"%>
 <a href="summary.jsp?exploreFromSession=true">Summary</a>
 </body>
 </html>

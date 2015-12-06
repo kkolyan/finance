@@ -33,9 +33,9 @@
     </style>
 </head>
 <body>
-<jsp:include page="top.jsp"/>
+<%@ include file="top.jsp"%>
 <%
-    Item root = finances.loadRoot();
+    Item root = finances.loadRoot((Long) session.getAttribute("userId"));
     try {
 %>
 <fin:items-tree item="<%= root %>"/><%

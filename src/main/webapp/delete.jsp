@@ -6,6 +6,7 @@
 <html>
 <head>
     <title></title>
+    <jsp:include page="css.jsp"/>
 </head>
 <body>
 <%
@@ -15,7 +16,7 @@
 
     Long transferId = Long.parseLong(request.getParameter("transferId"));
     if ("true".equals(request.getParameter("confirm"))) {
-        finances.deleteItem(transferId);
+        finances.deleteItem(transferId, (Long) session.getAttribute("userId"));
         response.sendRedirect(request.getParameter("parentPage"));
     }
 %>
