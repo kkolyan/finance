@@ -109,7 +109,7 @@ public class Finances {
     }
 
     public void deleteItem(Long itemId, Long userId) {
-        template.update("delete from item1 where id = ? and owner_id", itemId, userId);
+        template.update("delete from item1 where id = ? and owner_id = ?", itemId, userId);
     }
 
     public void addMonthlyTransfer(final String name, final long amount, final YearMonth begin,final YearMonth end, final Long parent, final Long userId) {
