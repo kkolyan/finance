@@ -89,7 +89,7 @@
         NavigableMap<LocalDate, List<InstantTransfer>> history = finances.loadHistory(userId);
 
         List<LocalDate> lastDays = new ArrayList<>(history.descendingKeySet());
-        lastDays = lastDays.subList(0, historyDays);
+        lastDays = lastDays.subList(0, Math.max(historyDays, lastDays.size()));
         for (LocalDate date: lastDays) {
             %><div class="panel"> <h4><%=date.format(Formats.DATE_TIME)%></h4> <%
 
