@@ -14,6 +14,7 @@
     <jsp:include page="css.jsp" />
 </head>
 <body>
+<%@ include file="top.jsp"%>
 <a href="summary.jsp?exploreFromSession=true">Summary</a>
 
 <%

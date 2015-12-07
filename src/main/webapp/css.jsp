@@ -2,11 +2,8 @@
 <style type="text/css" rel="stylesheet">
     <%
         String userAgent = request.getHeader("user-agent");
-        if (userAgent.contains("Android")) {
+        if (userAgent.contains("Android") || userAgent.contains("iPhone")) {
             %>
-            * {
-                white-space: nowrap;
-            }
             body {
                 zoom: 4;
             }
@@ -19,6 +16,7 @@
     }
     * {
         vertical-align: middle;
+        white-space: nowrap;
     }
     table {
         border-collapse: collapse;

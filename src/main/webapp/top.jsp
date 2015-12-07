@@ -12,7 +12,6 @@
     User user = users.getUser(theUserId);
 %>
 <div style="float: right;">
-    <a href="summary.jsp?exploreFromSession=true">Summary</a>
     <b><%=user.getName()%></b>
     <a href="logout.jsp">exit</a>
 </div>
