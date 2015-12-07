@@ -11,7 +11,11 @@
     }
     User user = users.getUser(theUserId);
 %>
-<div style="float: right;">
+<div class="menu">
+    <a href="summary.jsp?exploreFromSession=true">Summary</a>
+    |
+    <a href="add.jsp">Quick Add</a>
+    |
     <b><%=user.getName()%></b>
     <a href="logout.jsp">exit</a>
 </div>

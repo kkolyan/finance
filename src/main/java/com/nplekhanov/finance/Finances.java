@@ -130,6 +130,24 @@ public class Finances {
         });
     }
 
+    public NavigableMap<LocalDate,List<InstantTransfer>> loadHistory(Long userId) {
+        NavigableMap<LocalDate, List<InstantTransfer>> history = new TreeMap<>();
+        Collection<Item> shallowItems = loadShallowItems(userId);
+        for (Item item: shallowItems) {
+            if (item instanceof InstantTransfer) {
+                InstantTransfer transfer = (InstantTransfer) item;
+                if (transfer.getAmountType() == AmountType.ACTUAL) {
+                    List<InstantTransfer> transfers = history.get(transfer.getAt());
+                    if (transfers == null) {
+                        history.put(transfer.getAt(), transfers = new ArrayList<>());
+                    }
+                    transfers.add(transfer);
+                }
+            }
+        }
+        return history;
+    }
+
     private Map<Long,Item> loadHierarchy(Long userId) {
         final Map<Long,Item> itemById = new HashMap<>();
         for (Item item: loadShallowItems(userId)) {

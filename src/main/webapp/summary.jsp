@@ -95,19 +95,6 @@
             font-weight: normal;
         }
 
-        div.editor {
-            border: 1px solid #CCC;
-            padding: 0 10px;
-            margin-top: 5px;
-            margin-right: 10px;
-            margin-left: 0;
-            margin-bottom: 5px;
-            float: left;
-        }
-        div.editor h4 {
-            margin: 5px 0;
-        }
-
     </style>
 </head>
 <body>
@@ -263,7 +250,7 @@
 
             finances.addMonthlyTransfer(name, amount, begin, end, parent, userId);
         }
-        response.sendRedirect(request.getContextPath()+request.getServletPath()+"?"+request.getQueryString());
+        response.sendRedirect(request.getHeader("Referer"));
         return;
     }
     Collection<Group> groups = finances.loadGroups(userId);
