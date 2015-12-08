@@ -8,7 +8,7 @@
         if (userAgent.contains("Android") || userAgent.contains("iPhone")) {
             %>
             body {
-                zoom: 4;
+                /*zoom: 4;*/
             }
             div.menu {
                 float: none;
@@ -71,4 +71,20 @@
     div.panel h4 {
         margin: 5px 0;
     }
+
+    div#amountPad td {
+        margin: 0;
+        /*padding: 10px 20px;*/
+        width: 50px;
+        height: 50px;
+        text-align: center;
+        vertical-align: middle;
+    }
+    div#amountPad td:hover {
+        background-color: #dddddd;
+    }
+    div#amountPad td:active {
+        background-color: #b4b4b4;
+    }
 </style>
+<meta name="viewport" content="user-scalable=0, initial-scale=1.2"/>
