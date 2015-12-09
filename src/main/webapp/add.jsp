@@ -91,7 +91,7 @@
         <label>
 
             <input id="add_form_name" disabled name="name" value="<%=Escaping.safeHtml(root.getName())%>"/>
-            <a id="add_form_name_enable" href="javascript:;">Дать название</a>
+            <a id="add_form_name_enable" href="javascript:;"></a>
         </label>
         <input type="hidden" id="amountSignInput" name="amountSign" value="-"/>
         <input disabled id="amountAbsInput" name="amountAbs" value="0"/>
@@ -108,18 +108,23 @@
         </div>
         <script type="text/javascript">
             var add_form_name = document.getElementById("add_form_name");
-            document.getElementById("add_form_name_enable").onclick = function(event) {
+            function setFormNameText() {
+                add_form_name_enable.innerHTML = "Дать название";
+            }
+            var add_form_name_enable = document.getElementById("add_form_name_enable");
+            add_form_name_enable.onclick = function(event) {
                 if (add_form_name.disabled) {
                     add_form_name.disabled = false;
                     add_form_name.value = "";
                     add_form_name.focus();
-                    event.target.innerHTML = "Use group name";
+                    add_form_name_enable.innerHTML = "Взять название группы";
                 } else {
                     add_form_name.disabled = true;
                     add_form_name.value = "<%=Escaping.safeHtml(root.getName())%>";
-                    event.target.innerHTML = "Custom";
+                    setFormNameText();
                 }
             };
+            setFormNameText();
 
             var amountSubmit = document.getElementById("amountSubmit");
             var amountPad = document.getElementById("amountPad");
