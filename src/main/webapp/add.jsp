@@ -21,9 +21,18 @@
             background-color: #f2f2f2;
         }
 
-        #amountInput {
-            font: 18pt "Courier New";
+        #amountAbsInput {
+            font: 14pt "Courier New";
             font-weight: 800;
+            text-align: right;
+        }
+        a.active {
+            font-weight: bold;
+            color: black;
+        }
+        a.inactive {
+            font-weight: normal;
+            color: #CCCCCC;
         }
     </style>
 </head>
@@ -72,24 +81,29 @@
     %>
 </div>
 <div class="panel">
-    <h4>Add Instant Transfer</h4>
+    <h4>Добавить транзакцию</h4>
     <form id="add_form" action="summary.jsp" method="post">
         <input type="hidden" name="action" value="CreateInstantTransfer"/>
         <input type="hidden" name="parent" value="<%=root.getItemId()%>"/>
         <input type="hidden" name="at" value="<%=Formats.DATE_TIME.format(LocalDate.now(ZoneId.of("Europe/Moscow")))%>"/>
+        <a id="amountSignMinus" class="active" href="javascript:;">Расход</a>
+        <a id="amountSignPlus" class="inactive" href="javascript:;">Доход</a>
         <label>
 
             <input id="add_form_name" disabled name="name" value="<%=Escaping.safeHtml(root.getName())%>"/>
-            <a id="add_form_name_enable" href="javascript:;">Custom</a>
+            <a id="add_form_name_enable" href="javascript:;">Дать название</a>
         </label>
-        <input disabled id="amountInput" name="amount" value="0" size="10"/>
-        <a id="amountPad_del" href="javascript:;">Correct</a>
+        <input type="hidden" id="amountSignInput" name="amountSign" value="-"/>
+        <input disabled id="amountAbsInput" name="amountAbs" value="0"/>
+        <input type="hidden" id="amountInput" name="amount"/>
+        <input style="display: none" type="submit" value="Submit" id="amountSubmit"/>
+        <a id="amountPad_del" href="javascript:;">Коррекция</a>
         <div id="amountPad">
             <table>
                 <tr><td class="amountPad_number">7</td><td class="amountPad_number">8</td><td class="amountPad_number">9</td></tr>
                 <tr><td class="amountPad_number">4</td><td class="amountPad_number">5</td><td class="amountPad_number">6</td></tr>
                 <tr><td class="amountPad_number">1</td><td class="amountPad_number">2</td><td class="amountPad_number">3</td></tr>
-                <tr><td id="amountPad_minus">-</td><td class="amountPad_number">0</td><td id="amountPad_ok"><b>Ok</b></td></tr>
+                <tr><td class="amountPad_number" colspan="2">0</td><td id="amountPad_ok"><b>Ok</b></td></tr>
             </table>
         </div>
         <script type="text/javascript">
@@ -107,27 +121,47 @@
                 }
             };
 
+            var amountSubmit = document.getElementById("amountSubmit");
             var amountPad = document.getElementById("amountPad");
             var amountInput = document.getElementById("amountInput");
+            var amountAbsInput = document.getElementById("amountAbsInput");
+            var amountSignInput = document.getElementById("amountSignInput");
             var cells = amountPad.getElementsByTagName("td");
             var numbers = document.getElementsByClassName("amountPad_number");
+            function resizeAmountAbsInput() {
+                amountAbsInput.size = Math.max((amountAbsInput.value+"").length, 6);
+            }
+            resizeAmountAbsInput();
             for (var i = 0; i < numbers.length; i ++) {
                 numbers.item(i).onclick = function(event) {
-                    var v = amountInput.value;
+                    var v = amountAbsInput.value;
                     var n = parseInt(event.target.innerHTML);
-                    amountInput.value = 10 * v + n;
+                    amountAbsInput.value = 10 * v + n;
+                    resizeAmountAbsInput();
                 };
             }
             document.getElementById("amountPad_del").onclick = function(event) {
-                amountInput.value = Math.floor(amountInput.value / 10);
+                amountAbsInput.value = Math.floor(amountAbsInput.value / 10);
+                resizeAmountAbsInput();
             };
             document.getElementById("amountPad_ok").onclick = function(event) {
-                amountInput.disabled = false;
+                amountInput.value = (amountSignInput.value == "-" ? -1 : 1) * parseInt(amountAbsInput.value);
                 add_form_name.disabled = false;
                 document.getElementById("add_form").submit();
             };
-            document.getElementById("amountPad_minus").onclick = function(event) {
-                amountInput.value = - parseInt(amountInput.value);
+            amountSubmit.onclick = document.getElementById("amountPad_ok").onclick;
+
+            var amountSignPlus = document.getElementById("amountSignPlus");
+            var amountSignMinus = document.getElementById("amountSignMinus");
+            amountSignPlus.onclick = function() {
+                amountSignPlus.className = "active";
+                amountSignMinus.className = "inactive";
+                amountSignInput.value = "+";
+            };
+            amountSignMinus.onclick = function() {
+                amountSignMinus.className = "active";
+                amountSignPlus.className = "inactive";
+                amountSignInput.value = "-";
             };
         </script>
     </form>
@@ -136,8 +170,8 @@
     <form>
         <input type="hidden" name="itemId" value="<%=root.getItemId()%>"/>
         <label>
-            History for
-            <input name="historyDays" value="<%=historyDays%>"/> days:
+            История за
+            <input name="historyDays" value="<%=historyDays%>"/> дней:
         </label>
     </form>
 </div>
